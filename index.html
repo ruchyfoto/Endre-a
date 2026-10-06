@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Endreça</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Pantalla d'entrada -->
+  <main id="auth" class="card hidden">
+    <h1>Endreça</h1>
+    <p class="muted">Entra o crea un compte per tenir les teves tasques a tot arreu.</p>
+    <form id="auth-form">
+      <label>Correu
+        <input id="email" type="email" autocomplete="email" required>
+      </label>
+      <label>Contrasenya (mínim 6 caràcters)
+        <input id="password" type="password" autocomplete="current-password" minlength="6" required>
+      </label>
+      <div class="row">
+        <button type="submit" id="btn-login">Entrar</button>
+        <button type="button" id="btn-signup" class="secondary">Crear compte</button>
+      </div>
+      <p id="auth-msg" class="msg" role="status"></p>
+    </form>
+  </main>
+
+  <!-- Aplicació -->
+  <main id="app" class="hidden">
+    <header class="top">
+      <div>
+        <h1>Endreça</h1>
+        <p id="today-label" class="muted"></p>
+      </div>
+      <button id="btn-logout" class="secondary small">Sortir</button>
+    </header>
+
+    <form id="task-form" class="card">
+      <input id="task-title" type="text" maxlength="200" placeholder="Nova tasca..." required>
+      <div class="row">
+        <select id="task-category" aria-label="Categoria">
+          <option value="estudi">📚 Estudi</option>
+          <option value="feina">💼 Feina</option>
+          <option value="personal" selected>🏠 Personal</option>
+        </select>
+        <input id="task-date" type="date" aria-label="Data">
+        <button type="submit">Afegir</button>
+      </div>
+    </form>
+
+    <nav class="tabs" id="tabs">
+      <button data-filter="avui" class="active">Avui</button>
+      <button data-filter="pendents">Pendents</button>
+      <button data-filter="fet">Fet</button>
+    </nav>
+
+    <ul id="task-list" class="tasks"></ul>
+    <p id="empty" class="muted hidden">Res per aquí. 🎉</p>
+    <p id="app-msg" class="msg" role="status"></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
