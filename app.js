@@ -200,6 +200,7 @@ function render() {
   }
 
   if (typeof updateDashboard === "function") updateDashboard();
+  if (typeof renderAgenda === "function") renderAgenda();
 }
 
 init();

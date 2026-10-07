@@ -60,6 +60,7 @@
       <div class="brand"><span class="mark"><i></i><i></i><i></i></span><span>Endreça</span></div>
       <nav class="nav" id="views">
         <button type="button" class="navbtn active" data-view="tasques"><span class="ico">✅</span><span>Tasques</span></button>
+        <button type="button" class="navbtn" data-view="agenda"><span class="ico">📅</span><span>Agenda</span></button>
         <button type="button" class="navbtn" data-view="correus"><span class="ico">✉️</span><span>Correus</span><span id="mail-badge" class="badge hidden"></span></button>
       </nav>
       <div class="rail-foot">
@@ -75,6 +76,7 @@
           <p id="today-label" class="day-date"></p>
           <div id="daybar" class="daybar" role="img"></div>
           <p class="day-info"><span id="day-summary"></span> <span id="day-late" class="late hidden"></span></p>
+          <div id="day-agenda" class="day-agenda hidden" title="Obre l'agenda"></div>
         </div>
       </header>
 
@@ -105,7 +107,44 @@
       </section>
 
       <!-- Vista: correus -->
-      <section id="view-correus" class="hidden">
+      <section id="view-agenda" class="hidden">
+      <div class="mail-top">
+        <span id="cal-status" class="pill">Calendari sense connectar</span>
+        <span class="spacer"></span>
+        <select id="cal-range" aria-label="Dies a mostrar">
+          <option value="7" selected>Pròxims 7 dies</option>
+          <option value="14">Pròxims 14 dies</option>
+        </select>
+        <button type="button" id="btn-cal-refresh">Connectar</button>
+        <button type="button" id="btn-cal-setup" class="secondary small">Configura</button>
+      </div>
+      <p class="muted privacy">Endreça només llegeix el teu calendari. No hi crea ni hi canvia res.</p>
+
+      <div id="cal-setup" class="setup">
+        <h2>Connecta el calendari d'Apple</h2>
+        <ol>
+          <li><b>A l'iPhone:</b> obre Calendari, toca «Calendaris» i la (i) del calendari que vulguis. Activa «Calendari públic» i toca «Comparteix l'enllaç».<br><b>Al Mac:</b> clic dret al calendari, «Compartir calendari», marca «Calendari públic» i copia l'enllaç.</li>
+          <li>Enganxa aquí l'enllaç que has copiat.</li>
+        </ol>
+        <div class="row">
+          <input id="cal-url" type="url" placeholder="webcal://p12-caldav.icloud.com/published/..." aria-label="Enllaç del calendari">
+          <button type="button" id="btn-cal-save">Connectar</button>
+        </div>
+        <p class="muted">Qui tingui aquest enllaç pot veure els esdeveniments d'aquest calendari. Et recomano crear-ne un de nou només per a Endreça (per exemple «Endreça») i compartir aquest.</p>
+        <p class="muted">Si prefereixes no fer-lo públic, pots importar un fitxer .ics. No s'actualitza sol.</p>
+        <div class="row">
+          <button type="button" id="btn-cal-pick" class="secondary small">Importar un fitxer .ics</button>
+          <input id="cal-file" type="file" accept=".ics,text/calendar" hidden>
+          <button type="button" id="btn-cal-off" class="secondary small hidden">Desconnectar el calendari</button>
+        </div>
+      </div>
+
+      <div id="cal-next" class="next hidden"></div>
+      <div id="cal-days" class="week"></div>
+      <p id="cal-msg" class="msg" role="status"></p>
+    </section>
+
+    <section id="view-correus" class="hidden">
       <div class="mail-top">
         <span id="mail-status" class="pill">Gmail sense connectar</span>
         <span class="spacer"></span>
@@ -177,5 +216,7 @@
   <script src="app.js"></script>
   <script src="correus.js"></script>
   <script src="tema.js"></script>
+  <script src="agenda-parse.js"></script>
+  <script src="agenda.js"></script>
 </body>
 </html>
