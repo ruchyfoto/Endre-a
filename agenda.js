@@ -17,6 +17,14 @@ let calLoading = false;
 let calTimer = null;
 let calSetupOpen = false;
 
+// Nom de la funció de Supabase. Per defecte «calendar»; si Supabase li ha donat una altra
+// adreça (p. ex. clever-action), es posa a config.js: const CALENDAR_FUNCTION = "...";
+// Accepta el nom sol o l'adreça sencera copiada de Supabase.
+function calFunctionName() {
+  const v = (typeof CALENDAR_FUNCTION !== "undefined" && CALENDAR_FUNCTION) || "calendar";
+  return String(v).trim().replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop();
+}
+
 const calKey = () => CAL_KEY + ":" + calUid;
 const calConfigured = () => !!(calUrl || calFetched);
 
@@ -67,12 +75,13 @@ async function fetchIcs(url) {
   } catch (e) { /* normalment bloquejat per CORS: passem a la funció */ }
 
   // 2) Per la funció «calendar» de Supabase (la que té els permisos)
-  const { data, error } = await sb.functions.invoke("calendar", { body: { url: clean } });
+  const { data, error } = await sb.functions.invoke(calFunctionName(), { body: { url: clean } });
   if (error) {
     let msg = "";
     try { msg = (await error.context.json()).error || ""; } catch (e) {}
     const err = new Error(msg || error.message || "Error de la funció");
     err.status = error.context && error.context.status;
+    if (!err.status) err.noReply = true;
     throw err;
   }
   if (!data || !data.ics) throw new Error((data && data.error) || "Resposta buida");
@@ -92,7 +101,10 @@ function applyIcs(text, source) {
 
 function calErrorText(e) {
   if (e && e.status === 404) {
-    return "Falta crear la funció «calendar» a Supabase. Els passos són a la pantalla de configuració.";
+    return "Supabase no troba la funció del calendari. Comprova que CALENDAR_FUNCTION a config.js és l'adreça de la funció (la que surt a Edge Functions).";
+  }
+  if (e && e.noReply) {
+    return "No s'ha pogut contactar amb la funció «" + calFunctionName() + "» de Supabase. Revisa CALENDAR_FUNCTION a config.js i que «Verify JWT» de la funció estigui desactivat.";
   }
   return "No s'ha pogut llegir el calendari: " + ((e && e.message) || "error desconegut");
 }
