@@ -92,3 +92,27 @@ button.small { padding: 6px 10px; font-size: .85rem; }
 .tasks .del { background: transparent; color: var(--muted); padding: 4px 8px; font-size: 1.1rem; }
 .msg { min-height: 1.2em; font-size: .9rem; color: var(--muted); }
 .msg.error { color: var(--danger); }
+
+/* Vistes i correus */
+.views { margin-top: 12px; }
+.check { display: block; margin-top: 10px; font-size: .9rem; color: var(--muted); }
+.check input { vertical-align: middle; margin-right: 6px; }
+.mails { list-style: none; padding: 0; margin: 0; }
+.mails li {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.mails li.estudi { border-left-color: var(--estudi); }
+.mails li.feina { border-left-color: var(--feina); }
+.mails li.personal { border-left-color: var(--personal); }
+.mails .title { word-break: break-word; }
+.mails li.unread .title { font-weight: 700; }
+.mails .meta { font-size: .8rem; color: var(--muted); }
+.mail-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.mail-actions select { padding: 6px 8px; font-size: .85rem; }
+.mail-actions .open { margin-left: auto; font-size: .85rem; color: var(--accent); text-decoration: none; }
+#btn-show-promos { margin-bottom: 8px; }

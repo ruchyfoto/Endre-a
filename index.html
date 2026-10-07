@@ -37,6 +37,12 @@
       <button id="btn-logout" class="secondary small">Sortir</button>
     </header>
 
+    <nav class="tabs views" id="views">
+      <button data-view="tasques" class="active">✅ Tasques</button>
+      <button data-view="correus">✉️ Correus</button>
+    </nav>
+
+    <section id="view-tasques">
     <form id="task-form" class="card">
       <input id="task-title" type="text" maxlength="200" placeholder="Nova tasca..." required>
       <div class="row">
@@ -59,10 +65,41 @@
     <ul id="task-list" class="tasks"></ul>
     <p id="empty" class="muted hidden">Res per aquí. 🎉</p>
     <p id="app-msg" class="msg" role="status"></p>
+    </section>
+
+    <section id="view-correus" class="hidden">
+      <div class="card">
+        <p class="muted">Endreça només llegeix la teva safata d'entrada (mai canvia ni esborra res) i no guarda els correus enlloc.</p>
+        <div class="row">
+          <button type="button" id="btn-gmail">Connectar Gmail</button>
+          <select id="mail-days" aria-label="Període">
+            <option value="3">Últims 3 dies</option>
+            <option value="7" selected>Últims 7 dies</option>
+            <option value="14">Últims 14 dies</option>
+          </select>
+        </div>
+        <label class="check"><input type="checkbox" id="mail-unread"> Només no llegits</label>
+      </div>
+
+      <nav class="tabs" id="mail-tabs">
+        <button data-cat="tots" class="active">Tots</button>
+        <button data-cat="estudi">📚</button>
+        <button data-cat="feina">💼</button>
+        <button data-cat="personal">🏠</button>
+        <button data-cat="altres">Altres</button>
+      </nav>
+
+      <ul id="mail-list" class="mails"></ul>
+      <p id="mail-empty" class="muted hidden">Cap correu per mostrar. 🎉</p>
+      <button type="button" id="btn-show-promos" class="secondary small hidden"></button>
+      <p id="mail-msg" class="msg" role="status"></p>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="app.js"></script>
+  <script src="correus.js"></script>
 </body>
 </html>
