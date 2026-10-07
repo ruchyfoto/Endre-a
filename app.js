@@ -5,7 +5,13 @@ let user = null;
 let tasks = [];
 let filter = "avui";
 
-const CATS = { estudi: "📚 Estudi", feina: "💼 Feina", personal: "🏠 Personal" };
+const CAT_ORDER = ["estudi", "feina", "personal"];
+const CAT_NAMES = { estudi: "Estudi", feina: "Feina", personal: "Personal" };
+const EMPTY_TEXT = {
+  avui: "No tens res pendent per avui. Afegeix una tasca a dalt o mira les pendents.",
+  pendents: "No tens cap tasca pendent. Bon moment per afegir-ne una de nova.",
+  fet: "Encara no has acabat cap tasca. Quan en marquis una, apareixerà aquí.",
+};
 
 function todayStr() {
   // Data local en format AAAA-MM-DD
@@ -20,9 +26,6 @@ function showMsg(el, text, isError) {
 /* ---------- Sessió ---------- */
 
 async function init() {
-  $("today-label").textContent = new Date().toLocaleDateString("ca-ES", {
-    weekday: "long", day: "numeric", month: "long",
-  });
   $("task-date").value = todayStr();
 
   const { data } = await sb.auth.getSession();
@@ -125,49 +128,78 @@ function visibleTasks() {
   return tasks.filter((t) => !t.done && t.due_date && t.due_date <= today);
 }
 
+function dueInfo(t, today) {
+  if (!t.due_date) return { text: "Sense data", late: false };
+  const day = new Date(t.due_date + "T00:00:00");
+  const diff = Math.round((day - new Date(today + "T00:00:00")) / 86400000);
+  if (diff === 0) return { text: "Avui", late: false };
+  if (diff === 1) return { text: "Demà", late: false };
+  if (diff === -1) return { text: "Ahir", late: !t.done };
+  if (diff < 0) return { text: "Fa " + -diff + " dies", late: !t.done };
+  return { text: day.toLocaleDateString("ca-ES", { day: "numeric", month: "short" }), late: false };
+}
+
+function taskRow(t, today) {
+  const li = document.createElement("li");
+  li.className = t.done ? "done" : "";
+
+  const cb = document.createElement("input");
+  cb.type = "checkbox";
+  cb.checked = t.done;
+  cb.setAttribute("aria-label", "Marcar com a feta");
+  cb.addEventListener("change", () => toggleTask(t));
+
+  const info = document.createElement("div");
+  const title = document.createElement("div");
+  title.className = "title";
+  title.textContent = t.title; // textContent: evita injectar HTML
+  const meta = document.createElement("div");
+  const due = dueInfo(t, today);
+  meta.className = "meta" + (due.late ? " late" : "");
+  meta.textContent = due.text;
+  info.append(title, meta);
+
+  const del = document.createElement("button");
+  del.className = "del";
+  del.setAttribute("aria-label", "Esborrar");
+  del.textContent = "✕";
+  del.addEventListener("click", () => deleteTask(t));
+
+  li.append(cb, info, del);
+  return li;
+}
+
 function render() {
-  const list = $("task-list");
-  list.innerHTML = "";
+  const board = $("task-list");
+  board.innerHTML = "";
   const items = visibleTasks();
-  $("empty").classList.toggle("hidden", items.length > 0);
   const today = todayStr();
 
-  for (const t of items) {
-    const li = document.createElement("li");
-    li.className = t.category + (t.done ? " done" : "");
+  $("empty").classList.toggle("hidden", items.length > 0);
+  $("empty").textContent = EMPTY_TEXT[filter];
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = t.done;
-    cb.addEventListener("change", () => toggleTask(t));
+  // Una columna per categoria (només les que tenen tasques)
+  for (const cat of CAT_ORDER) {
+    const inCat = items.filter((t) => t.category === cat);
+    if (!inCat.length) continue;
 
-    const info = document.createElement("div");
-    info.className = "info";
-    const title = document.createElement("div");
-    title.className = "title";
-    title.textContent = t.title; // textContent: evita injectar HTML
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    let text = CATS[t.category] || t.category;
-    if (t.due_date) {
-      text += " · " + t.due_date;
-      if (!t.done && t.due_date < today) {
-        text += " · endarrerida";
-        meta.classList.add("late");
-      }
-    }
-    meta.textContent = text;
-    info.append(title, meta);
+    const col = document.createElement("section");
+    col.className = "col " + cat;
+    const head = document.createElement("h2");
+    head.textContent = CAT_NAMES[cat];
+    const count = document.createElement("span");
+    count.textContent = inCat.length;
+    head.appendChild(count);
 
-    const del = document.createElement("button");
-    del.className = "del";
-    del.setAttribute("aria-label", "Esborrar");
-    del.textContent = "✕";
-    del.addEventListener("click", () => deleteTask(t));
+    const ul = document.createElement("ul");
+    ul.className = "tasks";
+    for (const t of inCat) ul.appendChild(taskRow(t, today));
 
-    li.append(cb, info, del);
-    list.appendChild(li);
+    col.append(head, ul);
+    board.appendChild(col);
   }
+
+  if (typeof updateDashboard === "function") updateDashboard();
 }
 
 init();

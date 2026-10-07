@@ -2,104 +2,176 @@
 <html lang="ca">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f5fd6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Endreça</title>
+  <script>
+    /* Aplica el color i el mode abans de pintar, per evitar parpellejos */
+    try {
+      var p = JSON.parse(localStorage.getItem("endreca-prefs") || "{}");
+      document.documentElement.dataset.accent = p.accent || "ocea";
+      document.documentElement.dataset.mode = p.mode || "auto";
+    } catch (e) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- Pantalla d'entrada -->
-  <main id="auth" class="card hidden">
-    <h1>Endreça</h1>
-    <p class="muted">Entra o crea un compte per tenir les teves tasques a tot arreu.</p>
-    <form id="auth-form">
-      <label>Correu
-        <input id="email" type="email" autocomplete="email" required>
-      </label>
-      <label>Contrasenya (mínim 6 caràcters)
-        <input id="password" type="password" autocomplete="current-password" minlength="6" required>
-      </label>
-      <div class="row">
-        <button type="submit" id="btn-login">Entrar</button>
-        <button type="button" id="btn-signup" class="secondary">Crear compte</button>
+  <!-- Entrada -->
+  <main id="auth" class="auth hidden">
+    <section class="auth-art">
+      <div class="brand brand-big"><span class="mark"><i></i><i></i><i></i></span><span>Endreça</span></div>
+      <div>
+        <p class="auth-claim">El teu dia, en ordre.</p>
+        <div class="daybar demo" aria-hidden="true">
+          <span class="estudi done"></span><span class="feina done"></span><span class="personal done"></span>
+          <span class="estudi"></span><span class="feina"></span><span class="personal"></span>
+        </div>
+        <p class="auth-sub">Tasques, estudi, feina i només els correus que importen.</p>
       </div>
-      <p id="auth-msg" class="msg" role="status"></p>
-    </form>
+    </section>
+
+    <section class="auth-panel">
+      <form id="auth-form">
+        <h1>Entra a Endreça</h1>
+        <p class="muted">Si encara no tens compte, crea'l amb el mateix correu i contrasenya.</p>
+        <label>Correu
+          <input id="email" type="email" autocomplete="email" required>
+        </label>
+        <label>Contrasenya (mínim 6 caràcters)
+          <input id="password" type="password" autocomplete="current-password" minlength="6" required>
+        </label>
+        <div class="row">
+          <button type="submit" id="btn-login">Entrar</button>
+          <button type="button" id="btn-signup" class="secondary">Crear compte</button>
+        </div>
+        <p id="auth-msg" class="msg" role="status"></p>
+      </form>
+    </section>
   </main>
 
   <!-- Aplicació -->
-  <main id="app" class="hidden">
-    <header class="top">
-      <div>
-        <h1>Endreça</h1>
-        <p id="today-label" class="muted"></p>
-      </div>
-      <button id="btn-logout" class="secondary small">Sortir</button>
-    </header>
-
-    <nav class="tabs views" id="views">
-      <button data-view="tasques" class="active">✅ Tasques</button>
-      <button data-view="correus">✉️ Correus</button>
-    </nav>
-
-    <section id="view-tasques">
-    <form id="task-form" class="card">
-      <input id="task-title" type="text" maxlength="200" placeholder="Nova tasca..." required>
-      <div class="row">
-        <select id="task-category" aria-label="Categoria">
-          <option value="estudi">📚 Estudi</option>
-          <option value="feina">💼 Feina</option>
-          <option value="personal" selected>🏠 Personal</option>
-        </select>
-        <input id="task-date" type="date" aria-label="Data">
-        <button type="submit">Afegir</button>
-      </div>
-    </form>
-
-    <nav class="tabs" id="tabs">
-      <button data-filter="avui" class="active">Avui</button>
-      <button data-filter="pendents">Pendents</button>
-      <button data-filter="fet">Fet</button>
-    </nav>
-
-    <ul id="task-list" class="tasks"></ul>
-    <p id="empty" class="muted hidden">Res per aquí. 🎉</p>
-    <p id="app-msg" class="msg" role="status"></p>
-    </section>
-
-    <section id="view-correus" class="hidden">
-      <div class="card">
-        <p class="muted">Endreça només llegeix la teva safata d'entrada (mai canvia ni esborra res) i no guarda els correus enlloc.</p>
-        <div class="row">
-          <button type="button" id="btn-gmail">Connectar Gmail</button>
-          <select id="mail-days" aria-label="Període">
-            <option value="3">Últims 3 dies</option>
-            <option value="7" selected>Últims 7 dies</option>
-            <option value="14">Últims 14 dies</option>
-          </select>
-        </div>
-        <label class="check"><input type="checkbox" id="mail-unread"> Només no llegits</label>
-      </div>
-
-      <nav class="tabs" id="mail-tabs">
-        <button data-cat="tots" class="active">Tots</button>
-        <button data-cat="estudi">📚</button>
-        <button data-cat="feina">💼</button>
-        <button data-cat="personal">🏠</button>
-        <button data-cat="altres">Altres</button>
+  <div id="app" class="shell hidden">
+    <aside class="rail">
+      <div class="brand"><span class="mark"><i></i><i></i><i></i></span><span>Endreça</span></div>
+      <nav class="nav" id="views">
+        <button type="button" class="navbtn active" data-view="tasques"><span class="ico">✅</span><span>Tasques</span></button>
+        <button type="button" class="navbtn" data-view="correus"><span class="ico">✉️</span><span>Correus</span></button>
       </nav>
+      <div class="rail-foot">
+        <button type="button" class="navbtn" id="btn-settings"><span class="ico">🎨</span><span>Personalitza</span></button>
+      </div>
+    </aside>
 
-      <ul id="mail-list" class="mails"></ul>
-      <p id="mail-empty" class="muted hidden">Cap correu per mostrar. 🎉</p>
-      <button type="button" id="btn-show-promos" class="secondary small hidden"></button>
-      <p id="mail-msg" class="msg" role="status"></p>
-    </section>
-  </main>
+    <main class="content">
+      <header class="day">
+        <div class="day-num" id="day-num" aria-hidden="true"></div>
+        <div class="day-main">
+          <h1 id="greeting">Hola</h1>
+          <p id="today-label" class="day-date"></p>
+          <div id="daybar" class="daybar" role="img"></div>
+          <p class="day-info"><span id="day-summary"></span> <span id="day-late" class="late hidden"></span></p>
+        </div>
+      </header>
+
+      <!-- Vista: tasques -->
+      <section id="view-tasques">
+        <form id="task-form">
+          <input id="task-title" type="text" maxlength="200" placeholder="Què has de fer?" aria-label="Nova tasca" required>
+          <div class="row">
+            <select id="task-category" aria-label="Categoria">
+              <option value="estudi">📚 Estudi</option>
+              <option value="feina">💼 Feina</option>
+              <option value="personal" selected>🏠 Personal</option>
+            </select>
+            <input id="task-date" type="date" aria-label="Data">
+            <button type="submit">Afegir tasca</button>
+          </div>
+        </form>
+
+        <nav class="seg" id="tabs">
+          <button type="button" data-filter="avui" class="active">Avui</button>
+          <button type="button" data-filter="pendents">Pendents</button>
+          <button type="button" data-filter="fet">Fetes</button>
+        </nav>
+
+        <div id="task-list" class="board"></div>
+        <p id="empty" class="empty hidden"></p>
+        <p id="app-msg" class="msg" role="status"></p>
+      </section>
+
+      <!-- Vista: correus -->
+      <section id="view-correus" class="hidden">
+        <div class="mail-intro">
+          <p class="muted">Endreça només llegeix la teva safata d'entrada. No canvia ni esborra res, i no guarda els correus enlloc.</p>
+          <div class="row">
+            <button type="button" id="btn-gmail">Connectar Gmail</button>
+            <select id="mail-days" aria-label="Període">
+              <option value="3">Últims 3 dies</option>
+              <option value="7" selected>Últims 7 dies</option>
+              <option value="14">Últims 14 dies</option>
+            </select>
+            <label class="check"><input type="checkbox" id="mail-unread"> Només no llegits</label>
+          </div>
+        </div>
+
+        <nav class="seg" id="mail-tabs">
+          <button type="button" data-cat="tots" class="active">Tots</button>
+          <button type="button" data-cat="estudi">📚 Estudi</button>
+          <button type="button" data-cat="feina">💼 Feina</button>
+          <button type="button" data-cat="personal">🏠 Personal</button>
+          <button type="button" data-cat="altres">Sense classificar</button>
+        </nav>
+
+        <ul id="mail-list" class="mails"></ul>
+        <p id="mail-empty" class="empty hidden">Cap correu per mostrar. Prem «Connectar Gmail» per carregar-los.</p>
+        <button type="button" id="btn-show-promos" class="secondary small hidden"></button>
+        <p id="mail-msg" class="msg" role="status"></p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Personalització -->
+  <dialog id="settings">
+    <div class="dlg">
+      <h2>Personalitza</h2>
+      <p class="muted" id="settings-email"></p>
+
+      <div class="field">
+        <b>Com et dius?</b>
+        <input id="pref-name" type="text" maxlength="30" placeholder="El teu nom">
+      </div>
+
+      <div class="field">
+        <b>Color</b>
+        <div id="swatches" class="swatches"></div>
+      </div>
+
+      <div class="field">
+        <b>Aspecte</b>
+        <nav class="seg" id="mode-tabs">
+          <button type="button" data-mode="auto">Automàtic</button>
+          <button type="button" data-mode="clar">Clar</button>
+          <button type="button" data-mode="fosc">Fosc</button>
+        </nav>
+      </div>
+
+      <div class="dlg-actions">
+        <button type="button" id="btn-logout" class="secondary">Tancar sessió</button>
+        <button type="button" id="btn-close-settings">Fet</button>
+      </div>
+    </div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="config.js"></script>
   <script src="app.js"></script>
   <script src="correus.js"></script>
+  <script src="tema.js"></script>
 </body>
 </html>
