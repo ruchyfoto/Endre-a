@@ -238,33 +238,56 @@ button.small { padding: 7px 14px; font-size: .9rem; }
 
 /* ---------- Correus ---------- */
 
-.mail-intro { margin: 32px 0 20px; padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
-.mail-intro .muted { margin: 0; max-width: 62ch; }
-.mail-intro .row { align-items: center; }
-.mail-intro .row > * { flex: 0 0 auto; }
+.mail-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; margin: 32px 0 14px; }
+.mail-status { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+.dot.on { background: var(--personal); }
+.dot.wait { background: var(--feina); }
+.mail-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.mail-controls select { padding: 8px 12px; }
+.mail-summary-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 22px; }
+#mail-summary { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
 
-.mails { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 12px; }
-.mails li {
-  --cat: var(--border);
-  background: var(--surface);
-  border-left: 5px solid var(--cat);
-  border-radius: 6px 14px 14px 6px;
-  padding: 13px 16px;
+.col.altres { --cat: var(--muted); }
+.col.promo { --cat: var(--border); }
+.col.promo .mail { opacity: .8; }
+
+.mlist { list-style: none; margin: 8px 0 0; padding: 0; }
+.mail { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.mail:last-child { border-bottom: none; }
+.m-top { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 34px; height: 34px; flex: none; border-radius: 50%;
+  display: grid; place-items: center;
+  color: #fff; font-weight: 700; font-size: .95rem;
 }
-.mails li.estudi { --cat: var(--estudi); }
-.mails li.feina { --cat: var(--feina); }
-.mails li.personal { --cat: var(--personal); }
-.mails .title { font-weight: 500; word-break: break-word; }
-.mails li.unread .title { font-weight: 700; }
-.mails li.unread .title::before {
-  content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px;
+.m-from { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail.unread .m-from::after {
+  content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 8px;
   border-radius: 50%; background: var(--accent); vertical-align: middle;
 }
-.mails .meta { font-size: .88rem; color: var(--muted); }
-.mail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
-.mail-actions select { padding: 7px 10px; font-size: .88rem; }
-.mail-actions .open { margin-left: auto; font-size: .9rem; font-weight: 600; color: var(--accent-text); text-decoration: none; }
-#btn-show-promos { margin-bottom: 8px; }
+.m-time { font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.m-subject { margin-top: 8px; font-weight: 500; word-break: break-word; }
+.mail.unread .m-subject { font-weight: 700; }
+.m-snippet {
+  margin-top: 2px; font-size: .9rem; color: var(--muted);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.m-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.m-cats { display: flex; flex-wrap: wrap; gap: 6px; }
+.m-actions .open { margin-left: auto; font-size: .88rem; font-weight: 600; color: var(--accent-text); text-decoration: none; }
+.chip {
+  --cat: var(--muted);
+  padding: 3px 11px; font-size: .8rem; font-weight: 500;
+  border: 1.5px solid var(--cat); border-radius: 999px;
+  background: transparent; color: var(--text);
+}
+.chip.estudi { --cat: var(--estudi); }
+.chip.feina { --cat: var(--feina); }
+.chip.personal { --cat: var(--personal); }
+.chip:hover { filter: none; background: color-mix(in srgb, var(--cat) 14%, transparent); }
+.chip.on { background: color-mix(in srgb, var(--cat) 24%, var(--surface)); font-weight: 700; }
+.chip.on::before { content: "✓ "; }
 
 /* ---------- Personalització ---------- */
 
@@ -331,4 +354,120 @@ dialog::backdrop { background: rgba(10, 12, 16, .5); backdrop-filter: blur(3px);
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
+}
+
+/* ============ Correus (visual) ============ */
+
+.navbtn { position: relative; }
+.badge {
+  margin-left: auto; min-width: 22px; padding: 1px 7px; border-radius: 999px;
+  background: var(--accent); color: var(--accent-ink);
+  font-size: .78rem; font-weight: 700; text-align: center;
+}
+
+.mail-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 32px 0 6px; }
+.mail-top .spacer { flex: 1; }
+.mail-top > * { flex: 0 0 auto; }
+.privacy { margin: 0 0 22px; max-width: 70ch; font-size: .92rem; }
+.pill {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 8px 16px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--border);
+  font-size: .95rem; color: var(--muted); max-width: 100%; overflow-wrap: anywhere;
+}
+.pill::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
+.pill.on { color: var(--text); }
+.pill.on::before { background: var(--personal); box-shadow: 0 0 0 4px color-mix(in srgb, var(--personal) 25%, transparent); }
+.pill.busy::before { background: var(--feina); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+
+/* Targetes de resum */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+.stat {
+  --cat: var(--accent);
+  display: block; padding: 16px 18px; text-align: left;
+  border-radius: 18px; border: 2px solid transparent;
+  background: color-mix(in srgb, var(--cat) 13%, var(--surface));
+  color: var(--text); font-weight: 500;
+}
+.stat.estudi { --cat: var(--estudi); }
+.stat.feina { --cat: var(--feina); }
+.stat.personal { --cat: var(--personal); }
+.stat.promo { --cat: var(--muted); }
+button.stat:hover { filter: none; border-color: var(--cat); }
+.stat.on { border-color: var(--cat); }
+.stat b {
+  display: block; font-size: 2.7rem; line-height: 1; font-weight: 800; letter-spacing: -0.04em;
+  color: color-mix(in srgb, var(--cat) 80%, var(--text));
+}
+.stat span { display: block; margin-top: 6px; font-size: .92rem; color: var(--muted); }
+
+/* Remitents nous */
+.triage { margin-bottom: 24px; padding: 18px; border-radius: 20px; background: var(--accent-soft); }
+.triage h2 { font-size: 1.2rem; }
+.triage .muted { margin: 4px 0 0; }
+.triage-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; margin-top: 14px; }
+.tri { display: flex; flex-direction: column; gap: 12px; padding: 14px; background: var(--surface); border-radius: 16px; }
+.tri .who { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.tri .who > div:last-child { min-width: 0; }
+.tri .nm, .tri .ad { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tri .nm { font-weight: 600; }
+.tri .ad { font-size: .84rem; color: var(--muted); }
+.tri .btns { display: flex; gap: 6px; }
+.tri .btns button {
+  --cat: var(--personal);
+  flex: 1; padding: 8px 4px; font-size: .86rem; border-radius: 10px;
+  background: color-mix(in srgb, var(--cat) 14%, var(--surface));
+  color: var(--text); border: 1.5px solid var(--cat);
+}
+.tri .btns button.estudi { --cat: var(--estudi); }
+.tri .btns button.feina { --cat: var(--feina); }
+
+/* Correus agrupats per dies */
+.day-h { margin: 28px 0 12px; font-size: 1.05rem; font-weight: 700; color: var(--muted); }
+.day-h::first-letter { text-transform: uppercase; }
+.mgrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 12px; }
+.mcard {
+  --cat: var(--border);
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border-left: 5px solid var(--cat); border-radius: 8px 18px 18px 8px;
+}
+.mcard.estudi { --cat: var(--estudi); }
+.mcard.feina { --cat: var(--feina); }
+.mcard.personal { --cat: var(--personal); }
+.av {
+  --h: 220;
+  flex: none; width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: hsl(var(--h) 52% 42%); color: #fff;
+  font-weight: 700; font-size: 1.1rem;
+}
+.mtop { display: flex; justify-content: space-between; gap: 10px; font-size: .86rem; color: var(--muted); }
+.mtop .from { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mcard .subj { margin-top: 2px; font-weight: 500; word-break: break-word; }
+.mcard.unread .subj { font-weight: 800; }
+.mcard.unread .subj::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px;
+  border-radius: 50%; background: var(--accent); vertical-align: middle;
+}
+.mcard .snip {
+  margin-top: 2px; font-size: .92rem; color: var(--muted);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.mail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.mail-actions select { padding: 7px 10px; font-size: .88rem; }
+.mail-actions .open { margin-left: auto; font-size: .9rem; font-weight: 600; color: var(--accent-text); text-decoration: none; }
+#btn-show-promos { margin-top: 16px; }
+
+/* Càrrega */
+.mcard.skel .av { background: var(--border); }
+.mcard.skel i { display: block; height: 12px; margin: 8px 0; border-radius: 6px; background: var(--border); animation: pulse 1.1s ease-in-out infinite; }
+.mcard.skel i.short { width: 55%; }
+
+@media (max-width: 860px) {
+  .badge { position: absolute; top: 2px; left: calc(50% + 6px); margin: 0; font-size: .7rem; padding: 0 6px; min-width: 18px; }
+  .mail-top .spacer { display: none; }
+  .mail-top .pill { flex: 1 1 100%; }
 }

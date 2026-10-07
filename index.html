@@ -60,7 +60,7 @@
       <div class="brand"><span class="mark"><i></i><i></i><i></i></span><span>Endreça</span></div>
       <nav class="nav" id="views">
         <button type="button" class="navbtn active" data-view="tasques"><span class="ico">✅</span><span>Tasques</span></button>
-        <button type="button" class="navbtn" data-view="correus"><span class="ico">✉️</span><span>Correus</span></button>
+        <button type="button" class="navbtn" data-view="correus"><span class="ico">✉️</span><span>Correus</span><span id="mail-badge" class="badge hidden"></span></button>
       </nav>
       <div class="rail-foot">
         <button type="button" class="navbtn" id="btn-settings"><span class="ico">🎨</span><span>Personalitza</span></button>
@@ -106,32 +106,36 @@
 
       <!-- Vista: correus -->
       <section id="view-correus" class="hidden">
-        <div class="mail-intro">
-          <p class="muted">Endreça només llegeix la teva safata d'entrada. No canvia ni esborra res, i no guarda els correus enlloc.</p>
-          <div class="row">
-            <button type="button" id="btn-gmail">Connectar Gmail</button>
-            <select id="mail-days" aria-label="Període">
-              <option value="3">Últims 3 dies</option>
-              <option value="7" selected>Últims 7 dies</option>
-              <option value="14">Últims 14 dies</option>
-            </select>
-            <label class="check"><input type="checkbox" id="mail-unread"> Només no llegits</label>
-          </div>
-        </div>
+      <div class="mail-top">
+        <span id="mail-status" class="pill">Gmail sense connectar</span>
+        <span class="spacer"></span>
+        <select id="mail-days" aria-label="Període">
+          <option value="3">Últims 3 dies</option>
+          <option value="7" selected>Últims 7 dies</option>
+          <option value="14">Últims 14 dies</option>
+        </select>
+        <label class="check"><input type="checkbox" id="mail-unread"> Només no llegits</label>
+        <button type="button" id="btn-gmail">Connectar Gmail</button>
+        <button type="button" id="btn-gmail-off" class="secondary small hidden">Desconnectar</button>
+      </div>
+      <p class="muted privacy">Endreça només llegeix la teva safata d'entrada. No canvia ni esborra res, i no guarda els correus enlloc.</p>
 
-        <nav class="seg" id="mail-tabs">
-          <button type="button" data-cat="tots" class="active">Tots</button>
-          <button type="button" data-cat="estudi">📚 Estudi</button>
-          <button type="button" data-cat="feina">💼 Feina</button>
-          <button type="button" data-cat="personal">🏠 Personal</button>
-          <button type="button" data-cat="altres">Sense classificar</button>
-        </nav>
+      <div id="mail-stats" class="stats hidden"></div>
+      <div id="mail-new" class="triage hidden"></div>
 
-        <ul id="mail-list" class="mails"></ul>
-        <p id="mail-empty" class="empty hidden">Cap correu per mostrar. Prem «Connectar Gmail» per carregar-los.</p>
-        <button type="button" id="btn-show-promos" class="secondary small hidden"></button>
-        <p id="mail-msg" class="msg" role="status"></p>
-      </section>
+      <nav class="seg" id="mail-tabs">
+        <button type="button" data-cat="tots" class="active">Tots</button>
+        <button type="button" data-cat="estudi">📚 Estudi</button>
+        <button type="button" data-cat="feina">💼 Feina</button>
+        <button type="button" data-cat="personal">🏠 Personal</button>
+        <button type="button" data-cat="altres">Sense classificar</button>
+      </nav>
+
+      <div id="mail-list"></div>
+      <p id="mail-empty" class="empty hidden"></p>
+      <button type="button" id="btn-show-promos" class="secondary small hidden"></button>
+      <p id="mail-msg" class="msg" role="status"></p>
+    </section>
     </main>
   </div>
 
