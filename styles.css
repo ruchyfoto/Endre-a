@@ -606,3 +606,5 @@ button.stat:hover { filter: none; border-color: var(--cat); }
   .chatlog { height: 62vh; min-height: 320px; }
   .bubble { max-width: 94%; }
 }
+
+.auth-hint { margin: 14px 0 0; font-size: .85rem; line-height: 1.45; color: var(--muted); }

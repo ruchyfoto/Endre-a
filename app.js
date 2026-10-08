@@ -1,4 +1,7 @@
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// La sessió es guarda al navegador i es renova sola: no cal tornar a entrar cada cop.
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true },
+});
 const $ = (id) => document.getElementById(id);
 
 let user = null;
@@ -25,7 +28,26 @@ function showMsg(el, text, isError) {
 
 /* ---------- Sessió ---------- */
 
+function storageOk() {
+  try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); return true; } catch (e) { return false; }
+}
+
+// Demana al navegador que desi les credencials (ho gestiona ell, no Endreça) i que no esborri la sessió
+function rememberCredentials(email, password) {
+  try {
+    if (window.PasswordCredential && navigator.credentials && navigator.credentials.store) {
+      navigator.credentials.store(new PasswordCredential({ id: email, password })).catch(() => {});
+    }
+  } catch (e) { /* el navegador no ho admet: no passa res */ }
+  try {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  } catch (e) {}
+}
+
 async function init() {
+  if (!storageOk()) {
+    showMsg($("auth-msg"), "Aquest navegador no deixa desar la sessió (finestra privada o dades bloquejades): hauràs d'entrar cada cop.", true);
+  }
   $("task-date").value = todayStr();
 
   const { data } = await sb.auth.getSession();
@@ -46,10 +68,10 @@ function setUser(u) {
 
 $("auth-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const { error } = await sb.auth.signInWithPassword({
-    email: $("email").value.trim(),
-    password: $("password").value,
-  });
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (!error) rememberCredentials(email, password);
   showMsg($("auth-msg"), error ? "No s'ha pogut entrar: " + error.message : "", !!error);
 });
 
@@ -64,6 +86,8 @@ $("btn-signup").addEventListener("click", async () => {
   if (error) return showMsg($("auth-msg"), error.message, true);
   if (!data.session) {
     showMsg($("auth-msg"), "Compte creat. Revisa el correu per confirmar-lo i després entra.");
+  } else {
+    rememberCredentials(email, password);
   }
 });
 

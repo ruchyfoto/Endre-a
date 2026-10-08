@@ -40,16 +40,17 @@
         <h1>Entra a Endreça</h1>
         <p class="muted">Si encara no tens compte, crea'l amb el mateix correu i contrasenya.</p>
         <label>Correu
-          <input id="email" type="email" autocomplete="email" required>
+          <input id="email" name="email" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" required>
         </label>
         <label>Contrasenya (mínim 6 caràcters)
-          <input id="password" type="password" autocomplete="current-password" minlength="6" required>
+          <input id="password" name="password" type="password" autocomplete="current-password" minlength="6" required>
         </label>
         <div class="row">
           <button type="submit" id="btn-login">Entrar</button>
           <button type="button" id="btn-signup" class="secondary">Crear compte</button>
         </div>
         <p id="auth-msg" class="msg" role="status"></p>
+        <p class="auth-hint">Quan entris, el navegador et preguntarà si vols desar la contrasenya (Claus d'iCloud, Chrome...): digues que sí i no l'hauràs d'escriure més. Endreça no la desa enlloc. Al mòbil, «Afegeix a la pantalla d'inici» fa que la sessió duri més.</p>
       </form>
     </section>
   </main>
