@@ -61,6 +61,7 @@
       <nav class="nav" id="views">
         <button type="button" class="navbtn active" data-view="tasques"><span class="ico">✅</span><span>Tasques</span></button>
         <button type="button" class="navbtn" data-view="agenda"><span class="ico">📅</span><span>Agenda</span></button>
+        <button type="button" class="navbtn" data-view="xat"><span class="ico">💬</span><span>Xat</span></button>
         <button type="button" class="navbtn" data-view="correus"><span class="ico">✉️</span><span>Correus</span><span id="mail-badge" class="badge hidden"></span></button>
       </nav>
       <div class="rail-foot">
@@ -144,6 +145,43 @@
       <p id="cal-msg" class="msg" role="status"></p>
     </section>
 
+    <section id="view-xat" class="hidden">
+      <div class="mail-top">
+        <span id="chat-status" class="pill on">Assistent actiu</span>
+        <span class="spacer"></span>
+        <button type="button" id="btn-chat-clear" class="secondary small hidden">Esborra el xat</button>
+      </div>
+      <p class="muted privacy">Els missatges i els documents s'envien a l'API d'Anthropic per poder respondre't. Els documents s'esborren sols als 30 dies; els resums es queden al xat.</p>
+
+      <div class="chat-layout">
+        <aside class="docs">
+          <div class="docs-head">
+            <h2>Documents d'avui</h2>
+            <span id="docs-count" class="muted"></span>
+          </div>
+          <div id="doc-drop" class="drop">
+            <p>Arrossega aquí els documents de classe</p>
+            <button type="button" id="btn-pick-docs" class="secondary small">Tria fitxers</button>
+            <small>PDF, fotos, text, Word i PowerPoint. Màxim 10 MB per fitxer.</small>
+          </div>
+          <input id="doc-file" type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.txt,.md,.csv,.docx,.pptx,image/*,application/pdf">
+          <ul id="doc-list" class="doclist"></ul>
+          <button type="button" id="btn-summarize" disabled>Resumeix el dia</button>
+        </aside>
+
+        <div class="chatpanel">
+          <div id="chat-log" class="chatlog" role="log" aria-live="polite"></div>
+          <div id="chat-chips" class="chips"></div>
+          <form id="chat-form" class="chatform">
+            <textarea id="chat-input" rows="1" maxlength="4000" placeholder="Pregunta sobre el teu dia..." aria-label="Missatge"></textarea>
+            <button type="submit" id="btn-chat-send">Envia</button>
+          </form>
+          <label class="check"><input type="checkbox" id="chat-docs" disabled> <span id="chat-docs-label">Inclou els documents d'avui en aquesta pregunta</span></label>
+          <p id="chat-msg" class="msg" role="status"></p>
+        </div>
+      </div>
+    </section>
+
     <section id="view-correus" class="hidden">
       <div class="mail-top">
         <span id="mail-status" class="pill">Gmail sense connectar</span>
@@ -218,5 +256,7 @@
   <script src="tema.js"></script>
   <script src="agenda-parse.js"></script>
   <script src="agenda.js"></script>
+  <script src="docs-text.js"></script>
+  <script src="assistent.js"></script>
 </body>
 </html>
