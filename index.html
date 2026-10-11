@@ -93,6 +93,7 @@
               <option value="personal" selected>🏠 Personal</option>
             </select>
             <input id="task-date" type="date" aria-label="Data">
+            <input id="task-time" type="time" aria-label="Hora (opcional)" title="Hora (opcional)">
             <button type="submit">Afegir tasca</button>
           </div>
         </form>
@@ -144,6 +145,38 @@
       <div id="cal-next" class="next hidden"></div>
       <div id="cal-days" class="week"></div>
       <p id="cal-msg" class="msg" role="status"></p>
+
+      <section id="feed-card" class="feedcard" aria-labelledby="feed-title">
+        <h2 id="feed-title">Endreça al Calendari d'Apple</h2>
+        <p class="muted">Les teves tasques amb data apareixen soles en un calendari «Endreça» del Calendari d'Apple, a l'iPhone i al Mac. Les que tenen hora surten a aquella hora (durada d'1 h) i les altres com a «tot el dia». Només hi surten les pendents. És de només lectura: el que canviïs al Calendari no torna a Endreça.</p>
+        <p id="feed-loading" class="muted hidden">Carregant...</p>
+
+        <div id="feed-off" class="hidden">
+          <div class="row"><button type="button" id="btn-feed-create">Crea el meu enllaç</button></div>
+        </div>
+
+        <div id="feed-on" class="hidden">
+          <span class="pill on">Enllaç creat</span>
+          <ol>
+            <li>Prem <b>Subscriu-me al Calendari</b>. S'obrirà Calendari i et preguntarà si vols subscriure't: accepta.</li>
+            <li>Si no s'obre, prem <b>Copia l'enllaç</b> i afegeix-lo a mà. Al Mac: Arxiu &gt; Nou calendari subscrit. A l'iPhone: Ajustos &gt; Calendari &gt; Comptes &gt; Afegeix compte &gt; Altres &gt; Afegeix calendari subscrit. (Els noms poden variar una mica segons la versió.)</li>
+          </ol>
+          <div class="row">
+            <a id="btn-feed-sub" class="btnlink" href="#">Subscriu-me al Calendari</a>
+            <button type="button" id="btn-feed-copy" class="secondary">Copia l'enllaç</button>
+            <button type="button" id="btn-feed-test" class="secondary">Comprova que funciona</button>
+          </div>
+          <input id="feed-copy-box" class="hidden" type="text" readonly aria-label="Enllaç del calendari" spellcheck="false">
+          <div class="row feed-danger">
+            <button type="button" id="btn-feed-new" class="secondary small">Genera un enllaç nou</button>
+            <button type="button" id="btn-feed-off" class="secondary small">Desactiva el calendari</button>
+          </div>
+        </div>
+
+        <div class="row"><button type="button" id="btn-feed-retry" class="secondary small hidden">Torna-ho a provar</button></div>
+        <p class="muted feed-note">Apple actualitza els calendaris subscrits quan vol: una tasca nova pot trigar de minuts a unes hores a aparèixer. Qui tingui l'enllaç pot veure els títols de les teves tasques amb data, així que tracta'l com una contrasenya. Si l'has compartit sense voler, prem «Genera un enllaç nou» i l'antic deixa de funcionar.</p>
+        <p id="feed-msg" class="msg" role="status"></p>
+      </section>
     </section>
 
     <section id="view-xat" class="hidden">

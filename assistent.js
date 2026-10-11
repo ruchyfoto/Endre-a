@@ -208,7 +208,7 @@ async function asDeleteDoc(d) {
 
 function asContext() {
   const open = (typeof tasks !== "undefined" ? tasks : []).filter((t) => !t.done).slice(0, 40)
-    .map((t) => "[" + t.category + "] " + t.title + (t.due_date ? " (per al " + t.due_date + ")" : ""));
+    .map((t) => "[" + t.category + "] " + t.title + (t.due_date ? " (per al " + t.due_date + (t.due_time ? " a les " + String(t.due_time).slice(0, 5) : "") + ")" : ""));
   const now = Date.now(), lim = now + 7 * 86400000;
   const evs = (typeof calEvents !== "undefined" ? calEvents : [])
     .filter((e) => e.end > now && e.start < lim).slice(0, 40)

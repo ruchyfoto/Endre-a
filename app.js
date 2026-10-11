@@ -111,13 +111,19 @@ $("task-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const title = $("task-title").value.trim();
   if (!title) return;
-  const { error } = await sb.from("tasks").insert({
-    title,
-    category: $("task-category").value,
-    due_date: $("task-date").value || null,
-  });
-  if (error) return showMsg($("app-msg"), "No s'ha pogut afegir: " + error.message, true);
+  const due_date = $("task-date").value || null;
+  const time = $("task-time").value;
+  if (time && !due_date) return showMsg($("app-msg"), "Per posar una hora, tria també una data.", true);
+  const row = { title, category: $("task-category").value, due_date };
+  if (time) row.due_time = time; // només si s'ha posat hora: així tot funciona encara que no s'hagi executat supabase-feed.sql
+  const { error } = await sb.from("tasks").insert(row);
+  if (error) {
+    return showMsg($("app-msg"), /due_time/.test(error.message)
+      ? "Per posar hora a les tasques cal executar supabase-feed.sql a Supabase."
+      : "No s'ha pogut afegir: " + error.message, true);
+  }
   $("task-title").value = "";
+  $("task-time").value = "";
   loadTasks();
 });
 
@@ -153,6 +159,17 @@ function visibleTasks() {
 }
 
 function dueInfo(t, today) {
+  const r = dueDay(t, today);
+  if (t.due_date && t.due_time) r.text += " · " + String(t.due_time).slice(0, 5);
+  return r;
+}
+
+// Ordre dins d'una columna: per dia i, dins del dia, per hora (les que no en tenen, al final)
+function whenKey(t) {
+  return (t.due_date || "9999-12-31") + " " + (t.due_date && t.due_time ? String(t.due_time).slice(0, 5) : "99:99");
+}
+
+function dueDay(t, today) {
   if (!t.due_date) return { text: "Sense data", late: false };
   const day = new Date(t.due_date + "T00:00:00");
   const diff = Math.round((day - new Date(today + "T00:00:00")) / 86400000);
@@ -204,7 +221,7 @@ function render() {
 
   // Una columna per categoria (només les que tenen tasques)
   for (const cat of CAT_ORDER) {
-    const inCat = items.filter((t) => t.category === cat);
+    const inCat = items.filter((t) => t.category === cat).sort((a, b) => whenKey(a).localeCompare(whenKey(b)));
     if (!inCat.length) continue;
 
     const col = document.createElement("section");

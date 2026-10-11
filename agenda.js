@@ -16,6 +16,9 @@ let calSource = "";
 let calLoading = false;
 let calTimer = null;
 let calSetupOpen = false;
+let feedToken = null;    // enllaç secret del calendari subscrit (només en memòria)
+let feedState = "idle"; // idle | loading | ready | error
+let feedBusy = false;
 
 // Nom de la funció de Supabase. Per defecte «calendar»; si Supabase li ha donat una altra
 // adreça (p. ex. clever-action), es posa a config.js: const CALENDAR_FUNCTION = "...";
@@ -135,11 +138,13 @@ sb.auth.onAuthStateChange((_event, session) => {
     if (calUid) calClearCache(); // en tancar sessió, no deixem esdeveniments al dispositiu
     calUid = null; calUrl = ""; calEvents = []; calColor = null; calName = ""; calFetched = 0; calSource = "";
     clearInterval(calTimer);
+    feedReset();
     renderAgenda();
     return;
   }
   if (calUid === session.user.id) return; // només un cop per sessió
   calUid = session.user.id;
+  feedReset();
   calReadCache();
   const saved = session.user.user_metadata && session.user.user_metadata.cal_url;
   if (saved) calUrl = saved;
@@ -213,9 +218,147 @@ $("views").addEventListener("click", (e) => {
   $("view-agenda").classList.toggle("hidden", b.dataset.view !== "agenda");
   if (b.dataset.view === "agenda") {
     renderAgenda();
+    if (feedState === "idle" || feedState === "error") feedLoad(true);
     if (calUrl && Date.now() - calFetched > 5 * 60 * 1000) refreshCalendar(true);
   }
 });
+
+
+/* ---------- Endreça al Calendari d'Apple (calendari subscrit) ---------- */
+// Endreça publica les teves tasques amb data a un enllaç secret (webcal://) que el Calendari
+// d'Apple subscriu. L'enllaç es guarda a la taula calendar_feeds; aquí només el llegim i el gestionem.
+
+function feedHost() { try { return new URL(SUPABASE_URL).host; } catch (e) { return ""; } }
+
+function feedUrl(scheme) {
+  return scheme + "://" + feedHost() + "/functions/v1/" + calFunctionName() + "?t=" + feedToken;
+}
+
+function feedErrText(error) {
+  const m = (error && error.message) || "";
+  if (error && (error.code === "PGRST205" || error.code === "42P01" ||
+      (/calendar_feeds/.test(m) && /not find|does not exist|schema cache/i.test(m)))) {
+    return "Falta executar supabase-feed.sql a Supabase (SQL Editor).";
+  }
+  return "Error: " + (m || "desconegut");
+}
+
+function feedReset() {
+  feedToken = null; feedState = "idle"; feedBusy = false;
+  showMsg($("feed-msg"), "");
+  renderFeed();
+}
+
+async function feedLoad(force) {
+  if (!calUid || (feedState === "loading" && !force)) return;
+  feedState = "loading";
+  renderFeed();
+  const { data, error } = await sb.from("calendar_feeds").select("token").maybeSingle();
+  if (error) {
+    feedToken = null; feedState = "error";
+    renderFeed();
+    showMsg($("feed-msg"), feedErrText(error), true);
+    return false;
+  }
+  feedToken = data ? data.token : null;
+  feedState = "ready";
+  renderFeed();
+  return true;
+}
+
+async function feedMutate(work, okText) {
+  if (feedBusy) return;
+  feedBusy = true;
+  showMsg($("feed-msg"), "");
+  renderFeed();
+  const err = await work();
+  feedBusy = false;
+  const loaded = await feedLoad(true);
+  if (err) showMsg($("feed-msg"), feedErrText(err), true);
+  else if (loaded) showMsg($("feed-msg"), okText);
+}
+
+$("btn-feed-create").addEventListener("click", () =>
+  feedMutate(async () => {
+    const { error } = await sb.from("calendar_feeds").insert({});
+    return error && error.code !== "23505" ? error : null; // 23505: ja existia (doble clic)
+  }, "Enllaç creat. Ara prem «Subscriu-me al Calendari»."));
+
+$("btn-feed-new").addEventListener("click", () => {
+  if (!confirm("Es crearà un enllaç nou i l'antic deixarà de funcionar. Hauràs de tornar a subscriure't al Calendari (i esborrar-hi el calendari «Endreça» antic). Vols continuar?")) return;
+  feedMutate(async () => {
+    let r = await sb.from("calendar_feeds").delete().eq("user_id", calUid);
+    if (!r.error) r = await sb.from("calendar_feeds").insert({});
+    return r.error;
+  }, "Enllaç nou creat. L'antic ja no funciona: torna a subscriure't amb el botó de dalt.");
+});
+
+$("btn-feed-off").addEventListener("click", () => {
+  if (!confirm("Es desactivarà el calendari subscrit: l'enllaç deixarà de funcionar. Les tasques no s'esborren. Vols continuar?")) return;
+  feedMutate(async () => (await sb.from("calendar_feeds").delete().eq("user_id", calUid)).error,
+    "Calendari desactivat. Pots crear un enllaç nou quan vulguis.");
+});
+
+$("btn-feed-retry").addEventListener("click", () => { showMsg($("feed-msg"), ""); feedLoad(true); });
+
+$("btn-feed-copy").addEventListener("click", async () => {
+  if (!feedToken) return;
+  const url = feedUrl("https");
+  try {
+    await navigator.clipboard.writeText(url);
+    showMsg($("feed-msg"), "Enllaç copiat.");
+    return;
+  } catch (e) { /* el navegador no deixa copiar: plan B */ }
+  const box = $("feed-copy-box");
+  box.value = url;
+  box.classList.remove("hidden");
+  box.focus();
+  box.select();
+  showMsg($("feed-msg"), "Copia'l a mà (Cmd+C o mantén premut): ja el tens seleccionat.");
+});
+
+// Fa el mateix que farà Apple: obre l'enllaç sense cap sessió
+$("btn-feed-test").addEventListener("click", async () => {
+  if (!feedToken) return;
+  showMsg($("feed-msg"), "Comprovant...");
+  try {
+    const r = await fetch(feedUrl("https"), { cache: "no-store" });
+    const t = await r.text();
+    if (r.ok && t.indexOf("BEGIN:VCALENDAR") >= 0) {
+      const n = (t.match(/BEGIN:VEVENT/g) || []).length;
+      return showMsg($("feed-msg"), "Funciona: ara mateix el calendari té " + n + (n === 1 ? " tasca" : " tasques") + " pendents amb data.");
+    }
+    if (r.status === 401) {
+      return showMsg($("feed-msg"), "Supabase demana inici de sessió: a la funció, desactiva «Verify JWT» i torna-ho a provar.", true);
+    }
+    if (r.status === 405) {
+      return showMsg($("feed-msg"), "La funció encara és la versió antiga: torna a desplegar calendar-function.ts a Supabase.", true);
+    }
+    if (r.status === 404) {
+      return showMsg($("feed-msg"), "L'enllaç no es reconeix. Si acabes de generar-ne un de nou, recarrega la pàgina.", true);
+    }
+    showMsg($("feed-msg"), "L'enllaç ha respost amb l'error " + r.status + ".", true);
+  } catch (e) {
+    showMsg($("feed-msg"),
+      "No s'ha pogut obrir l'enllaç. Si l'adreça de la funció (CALENDAR_FUNCTION a config.js) és bona, " +
+      "és que «Verify JWT» està activat a la funció o que encara no has desplegat la versió nova: revisa-ho i torna-ho a provar.", true);
+  }
+});
+
+function renderFeed() {
+  const st = feedState;
+  $("feed-loading").classList.toggle("hidden", st !== "loading");
+  $("feed-off").classList.toggle("hidden", !(st === "ready" && !feedToken));
+  $("feed-on").classList.toggle("hidden", !(st === "ready" && !!feedToken));
+  $("btn-feed-retry").classList.toggle("hidden", st !== "error");
+  for (const id of ["btn-feed-create", "btn-feed-copy", "btn-feed-test", "btn-feed-new", "btn-feed-off"]) $(id).disabled = feedBusy;
+  $("btn-feed-sub").setAttribute("href", feedToken ? feedUrl("webcal") : "#");
+  if (!feedToken) {
+    const box = $("feed-copy-box"); // l'enllaç no es queda a la pàgina quan no cal
+    box.value = "";
+    box.classList.add("hidden");
+  }
+}
 
 /* ---------- Pintar ---------- */
 
@@ -354,7 +497,8 @@ function renderWeek() {
     card.appendChild(head);
 
     const evs = byDay[key] || [];
-    const tks = list.filter((t) => !t.done && t.due_date === key);
+    const tks = list.filter((t) => !t.done && t.due_date === key)
+      .sort((a, b) => (a.due_time ? String(a.due_time).slice(0, 5) : "99:99").localeCompare(b.due_time ? String(b.due_time).slice(0, 5) : "99:99"));
     evs.forEach((ev) => card.appendChild(evEl(ev, now, i === 0)));
     tks.forEach((t) => {
       const row = document.createElement("div");
@@ -362,7 +506,7 @@ function renderWeek() {
       const dot = document.createElement("i");
       dot.setAttribute("aria-hidden", "true");
       const tx = document.createElement("span");
-      tx.textContent = t.title;
+      tx.textContent = (t.due_time ? String(t.due_time).slice(0, 5) + " " : "") + t.title;
       row.append(dot, tx);
       card.appendChild(row);
     });

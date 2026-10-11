@@ -608,3 +608,24 @@ button.stat:hover { filter: none; border-color: var(--cat); }
 }
 
 .auth-hint { margin: 14px 0 0; font-size: .85rem; line-height: 1.45; color: var(--muted); }
+
+/* ============ Calendari subscrit i hora a les tasques ============ */
+
+.feedcard { max-width: 760px; margin-top: 32px; padding: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; }
+.feedcard h2 { font-size: 1.3rem; }
+.feedcard ol { margin: 14px 0 0; padding-left: 22px; }
+.feedcard li { margin-bottom: 10px; }
+.feedcard .row { align-items: center; }
+.feedcard .row > * { flex: 0 0 auto; }
+.feedcard .pill { margin-top: 14px; }
+.feedcard .muted { font-size: .92rem; max-width: 62ch; }
+.feed-danger { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.feed-note { margin-top: 18px; font-size: .88rem; }
+#feed-copy-box { width: 100%; margin-top: 12px; }
+.btnlink {
+  display: inline-block; padding: 11px 20px; border-radius: 999px;
+  background: var(--accent); color: var(--accent-ink);
+  font-weight: 600; text-decoration: none; text-align: center;
+}
+.btnlink:hover { filter: brightness(1.1); }
+#task-time { min-width: 7.5rem; }
