@@ -8,6 +8,9 @@ const AS_KEEP_DAYS = 30;       // els documents s'esborren sols passats aquests 
 const AS_MAX_SUMMARY = 8;      // documents per resum
 const AS_MAX_ASK = 4;          // documents per pregunta
 
+// Àudio que entén Gemini (es puja tal qual, sense convertir)
+const AS_AUDIO = { mp3: "audio/mp3", m4a: "audio/mp4", mp4: "audio/mp4", wav: "audio/wav", aac: "audio/aac", ogg: "audio/ogg", flac: "audio/flac", aif: "audio/aiff", aiff: "audio/aiff" };
+
 const AS_CHIPS = [
   "Què tinc avui?",
   "Organitza'm la tarda",
@@ -116,8 +119,12 @@ async function asPrepare(f) {
     if (!t) throw new Error("no hi he trobat text (si són només imatges, fes-ne una captura o desa'l com a PDF)");
     return { blob: new Blob([t], { type: "text/plain" }), mime: "text/plain", ext: "txt" };
   }
+  if (AS_AUDIO[ext] || f.type.indexOf("audio/") === 0) {
+    const mime = AS_AUDIO[ext] || (f.type === "audio/x-m4a" ? "audio/mp4" : f.type);
+    return { blob: f, mime, ext: AS_AUDIO[ext] ? ext : "m4a" };
+  }
   if (ext === "doc" || ext === "ppt") throw new Error("format antic: desa'l com a .docx/.pptx o com a PDF");
-  throw new Error("format no admès (PDF, fotos, text, Word o PowerPoint)");
+  throw new Error("format no admès (PDF, fotos, text, Word, PowerPoint o àudio)");
 }
 
 // Redueix les fotos (els apunts de la pissarra es llegeixen igual i pesen molt menys)
@@ -155,7 +162,7 @@ async function asImage(f) {
 
 async function asUploadOne(f) {
   const p = await asPrepare(f);
-  if (p.blob.size > AS_MAX_BYTES) throw new Error("pesa més de 10 MB");
+  if (p.blob.size > AS_MAX_BYTES) throw new Error(p.mime.indexOf("audio/") === 0 ? "l'àudio pesa més de 10 MB (talla'l en trossos més curts)" : "pesa més de 10 MB");
   const path = asUid + "/" + asDay() + "/" + asId() + "." + p.ext;
   const up = await sb.storage.from("documents").upload(path, p.blob, { contentType: p.mime, upsert: false });
   if (up.error) throw new Error(up.error.message);
@@ -255,7 +262,9 @@ async function asSend(text) {
     asMsgs.pop();
     asMsgs.push({ role: "assistant", kind: "chat", content: data.reply, tasks: asProposals(data.tasks) });
     asRemaining = data.remaining;
+    if (typeof veuReply === "function") veuReply(data.reply);
   } catch (e) {
+    if (typeof veuStop === "function") veuStop();
     asMsgs.pop(); asMsgs.pop();
     $("chat-input").value = text;           // no perds el que has escrit
     asAutosize();
@@ -499,7 +508,7 @@ function renderChat() {
 }
 
 function asIcon(mime) {
-  return mime === "application/pdf" ? "📄" : mime.indexOf("image/") === 0 ? "🖼️" : "📝";
+  return mime === "application/pdf" ? "📄" : mime.indexOf("audio/") === 0 ? "🎧" : mime.indexOf("image/") === 0 ? "🖼️" : "📝";
 }
 
 function renderDocs() {

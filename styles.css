@@ -629,3 +629,16 @@ button.stat:hover { filter: none; border-color: var(--cat); }
 }
 .btnlink:hover { filter: brightness(1.1); }
 #task-time { min-width: 7.5rem; }
+
+.as-tasks { display: grid; gap: 8px; margin-top: 12px; }
+.as-task { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 9px 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.as-task.ok { opacity: .7; }
+.as-task-txt { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.as-task-txt span { font-size: .85rem; color: var(--muted); }
+.as-task button { flex: none; }
+.as-tasks > .secondary { justify-self: start; }
+
+.mic { flex: none; padding: 10px 14px; font-size: 1.15rem; line-height: 1; background: var(--accent-soft); color: var(--text); border: 1px solid var(--border); }
+.mic.rec { background: var(--danger); color: #fff; border-color: var(--danger); animation: pulse 1s ease-in-out infinite; }
+.mic.say { background: var(--accent); color: var(--accent-ink); }
+.voice-opts { display: grid; gap: 2px; margin-top: 6px; }

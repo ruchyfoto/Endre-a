@@ -196,9 +196,9 @@
           <div id="doc-drop" class="drop">
             <p>Arrossega aquí els documents de classe</p>
             <button type="button" id="btn-pick-docs" class="secondary small">Tria fitxers</button>
-            <small>PDF, fotos, text, Word i PowerPoint. Màxim 10 MB per fitxer.</small>
+            <small>PDF, fotos, text, Word, PowerPoint i àudio (mp3, m4a, wav…). Màxim 10 MB per fitxer.</small>
           </div>
-          <input id="doc-file" type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.txt,.md,.csv,.docx,.pptx,image/*,application/pdf">
+          <input id="doc-file" type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.txt,.md,.csv,.docx,.pptx,.mp3,.m4a,.wav,.aac,.ogg,.flac,.aif,.aiff,audio/*,image/*,application/pdf">
           <ul id="doc-list" class="doclist"></ul>
           <button type="button" id="btn-summarize" disabled>Resumeix el dia</button>
         </aside>
@@ -208,9 +208,14 @@
           <div id="chat-chips" class="chips"></div>
           <form id="chat-form" class="chatform">
             <textarea id="chat-input" rows="1" maxlength="4000" placeholder="Pregunta sobre el teu dia..." aria-label="Missatge"></textarea>
+            <button type="button" id="btn-mic" class="mic hidden" aria-label="Parlar" title="Parlar">🎙️</button>
             <button type="submit" id="btn-chat-send">Envia</button>
           </form>
           <label class="check"><input type="checkbox" id="chat-docs" disabled> <span id="chat-docs-label">Inclou els documents d'avui en aquesta pregunta</span></label>
+          <div id="voice-opts" class="voice-opts hidden">
+            <label class="check"><input type="checkbox" id="voice-speak"> 🔊 Llegeix les respostes en veu alta</label>
+            <label class="check"><input type="checkbox" id="voice-hands"> 🗣️ Mans lliures: envia quan acabis de parlar i torna a escoltar</label>
+          </div>
           <p id="chat-msg" class="msg" role="status"></p>
         </div>
       </div>
@@ -292,5 +297,6 @@
   <script src="agenda.js"></script>
   <script src="docs-text.js"></script>
   <script src="assistent.js"></script>
+  <script src="veu.js"></script>
 </body>
 </html>
