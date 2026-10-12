@@ -91,7 +91,7 @@ $("btn-signup").addEventListener("click", async () => {
   }
 });
 
-$("btn-logout").addEventListener("click", () => sb.auth.signOut());
+$("btn-logout").addEventListener("click", () => sb.auth.signOut({ scope: "local" }));
 
 /* ---------- Tasques ---------- */
 
