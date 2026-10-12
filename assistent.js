@@ -253,7 +253,7 @@ async function asSend(text) {
   try {
     const data = await asInvoke({ action: "chat", message: text, doc_ids: withDocs ? attach.map((d) => d.id) : [] });
     asMsgs.pop();
-    asMsgs.push({ role: "assistant", kind: "chat", content: data.reply });
+    asMsgs.push({ role: "assistant", kind: "chat", content: data.reply, tasks: asProposals(data.tasks) });
     asRemaining = data.remaining;
   } catch (e) {
     asMsgs.pop(); asMsgs.pop();
@@ -264,6 +264,71 @@ async function asSend(text) {
     asBusy = false;
     renderChat(); asScroll(); updateChatStatus();
   }
+}
+
+/* ---------- Tasques proposades pel xat ---------- */
+
+function asProposals(list) {
+  return (Array.isArray(list) ? list : []).slice(0, 8).map((t) => ({
+    title: String(t.title || "").slice(0, 200), category: ["estudi", "feina", "personal"].includes(t.category) ? t.category : "personal",
+    date: /^\d{4}-\d{2}-\d{2}$/.test(t.date || "") ? t.date : null,
+    time: t.date && /^\d{2}:\d{2}$/.test(t.time || "") ? t.time : null, state: "",
+  })).filter((t) => t.title);
+}
+
+async function asAddTask(p) {
+  if (p.state === "ok" || p.state === "busy") return;
+  p.state = "busy"; renderChat();
+  const row = { title: p.title, category: p.category, due_date: p.date };
+  if (p.time) row.due_time = p.time; // només si hi ha hora (funciona encara que no s'hagi executat supabase-feed.sql)
+  const { error } = await sb.from("tasks").insert(row);
+  if (error) {
+    p.state = "";
+    showMsg($("chat-msg"), /due_time/.test(error.message)
+      ? "Per posar hora cal executar supabase-feed.sql a Supabase." : "No s'ha pogut afegir: " + error.message, true);
+  } else {
+    p.state = "ok";
+    showMsg($("chat-msg"), "");
+    if (typeof loadTasks === "function") loadTasks();
+  }
+  renderChat();
+}
+
+function asTaskCards(m) {
+  const box = document.createElement("div");
+  box.className = "as-tasks";
+  const CAT = { estudi: "📚", feina: "💼", personal: "🏠" };
+  for (const p of m.tasks) {
+    const row = document.createElement("div");
+    row.className = "as-task" + (p.state === "ok" ? " ok" : "");
+    const txt = document.createElement("div");
+    txt.className = "as-task-txt";
+    const t = document.createElement("b");
+    t.textContent = CAT[p.category] + " " + p.title;
+    const w = document.createElement("span");
+    w.textContent = p.date
+      ? new Date(p.date + "T00:00:00").toLocaleDateString("ca-ES", { weekday: "short", day: "numeric", month: "short" }) + (p.time ? " · " + p.time : "")
+      : "Sense data";
+    txt.append(t, w);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "small" + (p.state === "ok" ? " secondary" : "");
+    b.disabled = p.state === "ok" || p.state === "busy";
+    b.textContent = p.state === "ok" ? "✓ Afegida" : p.state === "busy" ? "Afegint…" : "Afegeix";
+    b.addEventListener("click", () => asAddTask(p));
+    row.append(txt, b);
+    box.appendChild(row);
+  }
+  const pending = m.tasks.filter((p) => p.state === "");
+  if (pending.length > 1) {
+    const all = document.createElement("button");
+    all.type = "button";
+    all.className = "secondary small";
+    all.textContent = "Afegeix-les totes (" + pending.length + ")";
+    all.addEventListener("click", async () => { for (const p of pending) await asAddTask(p); });
+    box.appendChild(all);
+  }
+  return box;
 }
 
 async function asSummarize() {
@@ -280,7 +345,7 @@ async function asSummarize() {
   try {
     const data = await asInvoke({ action: "summarize", doc_ids: ids });
     asMsgs.pop();
-    asMsgs.push({ role: "assistant", kind: "summary", day: asDay(), content: data.reply });
+    asMsgs.push({ role: "assistant", kind: "summary", day: asDay(), content: data.reply, tasks: asProposals(data.tasks) });
     asRemaining = data.remaining;
     await asReloadDocs();
   } catch (e) {
@@ -381,7 +446,7 @@ function renderChat() {
     const h = document.createElement("h2");
     h.textContent = "Pregunta'm el que vulguis del teu dia";
     const p = document.createElement("p");
-    p.textContent = "Veig les teves tasques i la teva agenda. Puja els documents de classe a l'esquerra i prem «Resumeix el dia» quan acabis.";
+    p.textContent = "Veig les teves tasques i la teva agenda, i puc proposar-te tasques noves (digues-me «apunta dijous a les 17h dentista»). Puja els documents de classe a l'esquerra i prem «Resumeix el dia» quan acabis.";
     e.append(h, p);
     log.appendChild(e);
   }
@@ -410,6 +475,7 @@ function renderChat() {
       }
     } else if (m.role === "assistant") {
       b.appendChild(asMarkdown(m.content));
+      if (m.tasks && m.tasks.length) b.appendChild(asTaskCards(m));
     } else {
       b.textContent = m.content; // textContent: el que escrius no s'interpreta mai com a HTML
     }
